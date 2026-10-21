@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Bookmark, FileText, CheckCircle2, ArrowRight } from 'lucide-react';
-import { Job, JobApplication, Language, SearchFilterState, StudentProfile, UserAccount } from './types';
+import { Bookmark, FileText, CheckCircle2, ArrowRight, Building2, Sparkles, MessageSquare, Send } from 'lucide-react';
+import { Job, JobApplication, Language, SearchFilterState, StudentProfile, UserAccount, ChatConversation, ChatMessage } from './types';
 import { EMPTY_STUDENT_PROFILE, INITIAL_JOBS } from './data/mockJobs';
+import { INITIAL_CONVERSATIONS } from './data/mockChat';
 import { useTranslation, SUPPORTED_LANGUAGES } from './data/translations';
 import { MobileTopBar } from './components/MobileTopBar';
 import { BottomNav, MobileTab } from './components/BottomNav';
@@ -12,6 +13,10 @@ import { ProfileView } from './components/ProfileView';
 import { ProfileSidebar } from './components/ProfileSidebar';
 import { MobileAuthModal } from './components/MobileAuthModal';
 import { MobileJobCard } from './components/MobileJobCard';
+import { EmployerDashboard } from './components/EmployerDashboard';
+import { ChatView } from './components/ChatView';
+import { AICvBuilderView } from './components/AICvBuilderView';
+import { QuickApplyModal } from './components/QuickApplyModal';
 
 export default function App() {
   // Clear any old hardcoded mock profiles from previous sessions
@@ -37,11 +42,11 @@ export default function App() {
 
   const t = useTranslation(lang);
 
-  // Tab State: 'home' | 'search' | 'saved' | 'applications' | 'profile'
+  // Active Tab State
   const [activeTab, setActiveTab] = useState<MobileTab>('home');
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
-  // Jobs Dataset
+  // Jobs Dataset (persisted so posted/moderated jobs persist)
   const [jobs, setJobs] = useState<Job[]>(() => {
     try {
       const saved = localStorage.getItem('jobshub_jobs_list');
@@ -71,11 +76,9 @@ export default function App() {
     }
   });
 
-  // YÊU CẦU: "phần thông tin cá nhân họ và tên, số điện thoại, email được để mặc định là trống"
   // Helper: lấy hồ sơ lưu riêng theo tài khoản người dùng
   const getProfileForUser = (user: UserAccount | null): StudentProfile => {
     if (!user) {
-      // Khi chưa đăng nhập: Họ tên, số điện thoại, email và các trường LUÔN ĐỂ MẶC ĐỊNH LÀ TRỐNG
       return EMPTY_STUDENT_PROFILE;
     }
     try {
@@ -86,17 +89,16 @@ export default function App() {
       }
     } catch {}
 
-    // Khi người dùng mới tạo tài khoản, ban đầu cũng để trống họ tên, số điện thoại, email hoặc để người dùng tự nhập
     return {
       ...EMPTY_STUDENT_PROFILE,
-      fullName: '',
-      email: '',
-      phone: '',
-      avatarUrl: '',
+      fullName: user.role === 'employer' ? user.fullName : '',
+      email: user.email || '',
+      phone: user.phone || '',
+      avatarUrl: user.avatarUrl || '',
     };
   };
 
-  // Student Profile State: Mặc định TRỐNG HOÀN TOÀN
+  // Student Profile State
   const [profile, setProfile] = useState<StudentProfile>(() => {
     try {
       const rawUser = localStorage.getItem('jobshub_current_user');
@@ -111,11 +113,57 @@ export default function App() {
   const [applications, setApplications] = useState<JobApplication[]>(() => {
     try {
       const raw = localStorage.getItem('jobshub_applications');
-      return raw ? JSON.parse(raw) : [];
+      return raw ? JSON.parse(raw) : [
+        {
+          id: 'app-sample-1',
+          jobId: 'job-01',
+          jobTitle: 'Thực tập sinh Lập trình Web Frontend',
+          companyName: 'FPT Software NextGen Hub',
+          appliedAt: '20/10/2026',
+          fullName: 'Trần Văn An',
+          email: 'an.tran@student.edu.vn',
+          phone: '0912 888 777',
+          university: 'ĐH Bách Khoa',
+          major: 'Công nghệ thông tin',
+          availableShifts: 'Ca Sáng và Chiều T2-T6',
+          note: 'Em có kinh nghiệm làm việc với React và Tailwind, rất mong được học hỏi tại công ty.',
+          status: 'Đã duyệt',
+        },
+        {
+          id: 'app-sample-2',
+          jobId: 'job-02',
+          jobTitle: 'Nhân viên Phục vụ & Pha chế Part-time',
+          companyName: 'Highlands Coffee',
+          appliedAt: '19/10/2026',
+          fullName: 'Lê Thị Thu Thảo',
+          email: 'thao.le@gmail.com',
+          phone: '0977 333 444',
+          university: 'ĐH Khoa học Xã hội & Nhân văn',
+          major: 'Du lịch - Nhà hàng',
+          availableShifts: 'Ca Tối và Cuối tuần',
+          note: 'Em chăm chỉ, nhanh nhẹn và có thể làm thêm giờ khi quán đông khách.',
+          status: 'Mời phỏng vấn',
+        },
+      ];
     } catch {
       return [];
     }
   });
+
+  // Chat Conversations State
+  const [conversations, setConversations] = useState<ChatConversation[]>(() => {
+    try {
+      const saved = localStorage.getItem('jobshub_conversations');
+      return saved ? JSON.parse(saved) : INITIAL_CONVERSATIONS;
+    } catch {
+      return INITIAL_CONVERSATIONS;
+    }
+  });
+  const [activeConvId, setActiveConvId] = useState<string | null>(null);
+
+  // Quick Apply Modal State
+  const [quickApplyJob, setQuickApplyJob] = useState<Job | null>(null);
+  const [quickApplyOpen, setQuickApplyOpen] = useState(false);
 
   // Profile Slide Bar open/close state
   const [isProfileSidebarOpen, setIsProfileSidebarOpen] = useState(false);
@@ -150,6 +198,18 @@ export default function App() {
       localStorage.setItem('jobshub_lang', lang);
     } catch {}
   }, [lang]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('jobshub_jobs_list', JSON.stringify(jobs));
+    } catch {}
+  }, [jobs]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('jobshub_conversations', JSON.stringify(conversations));
+    } catch {}
+  }, [conversations]);
 
   useEffect(() => {
     try {
@@ -218,6 +278,12 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Quick Apply Trigger
+  const handleQuickApply = (job: Job) => {
+    setQuickApplyJob(job);
+    setQuickApplyOpen(true);
+  };
+
   const handleSubmitApplication = (data: {
     jobId: string;
     fullName: string;
@@ -248,7 +314,7 @@ export default function App() {
     };
 
     setApplications((prev) => [newApp, ...prev]);
-    showToast(t.applySuccess);
+    showToast(t.applySuccess || 'Nộp hồ sơ ứng tuyển thành công!');
   };
 
   const handleSaveProfile = (updatedProfile: StudentProfile) => {
@@ -283,19 +349,188 @@ export default function App() {
     const userProfile = getProfileForUser(user);
     setProfile(userProfile);
     showToast(message);
-    setIsProfileSidebarOpen(true);
+    if (user.role === 'employer') {
+      setActiveTab('employer');
+    }
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
-    // Khi đăng xuất, đặt hồ sơ cá nhân về mặc định TRỐNG (Họ tên, SĐT, Email đều trống)
     setProfile(EMPTY_STUDENT_PROFILE);
     setIsProfileSidebarOpen(false);
-    showToast(lang === 'vi' ? 'Đã đăng xuất. Họ tên, SĐT, Email đã được để trống.' : 'Logged out. Profile reset to blank.');
+    setActiveTab('home');
+    showToast(lang === 'vi' ? 'Đã đăng xuất tài khoản.' : 'Logged out.');
+  };
+
+  // Employer Actions
+  const handleAddJob = (newJob: Job) => {
+    setJobs((prev) => [newJob, ...prev]);
+    showToast('Đã đăng bài tuyển dụng thành công!');
+  };
+
+  const handleUpdateJobStatus = (jobId: string, status: 'published' | 'pending' | 'closed') => {
+    setJobs((prev) =>
+      prev.map((j) => (j.id === jobId ? { ...j, status } : j))
+    );
+    showToast(
+      status === 'published'
+        ? 'Đã duyệt và công khai bài tuyển dụng!'
+        : status === 'closed'
+        ? 'Đã tạm đóng bài tuyển dụng'
+        : 'Đã chuyển sang trạng thái chờ duyệt'
+    );
+  };
+
+  const handleDeleteJob = (jobId: string) => {
+    setJobs((prev) => prev.filter((j) => j.id !== jobId));
+    showToast('Đã xóa bài tuyển dụng');
+  };
+
+  const handleUpdateAppStatus = (appId: string, status: 'Đã duyệt' | 'Mời phỏng vấn' | 'Từ chối' | 'Nhà tuyển dụng đã xem') => {
+    setApplications((prev) =>
+      prev.map((a) => (a.id === appId ? { ...a, status } : a))
+    );
+    showToast(`Đã cập nhật trạng thái hồ sơ: ${status}`);
+  };
+
+  // Chat Actions
+  const handleOpenChatWithEmployer = (job: Job) => {
+    let conv = conversations.find((c) => c.jobId === job.id);
+    if (!conv) {
+      conv = {
+        id: 'conv-' + Date.now(),
+        participantId: job.employerId || 'emp-' + job.id,
+        participantName: job.contactPerson || job.companyName + ' (Tuyển dụng)',
+        participantRole: 'employer',
+        companyName: job.companyName,
+        jobId: job.id,
+        jobTitle: job.title,
+        lastMessage: `Xin chào! Tôi có thể hỗ trợ gì cho bạn về vị trí ${job.title}?`,
+        lastTimestamp: 'Vừa xong',
+        unreadCount: 0,
+        messages: [
+          {
+            id: 'msg-' + Date.now(),
+            senderId: job.employerId || 'employer',
+            senderName: job.contactPerson || job.companyName,
+            senderRole: 'employer',
+            text: `Chào bạn, cảm ơn bạn đã quan tâm đến vị trí ${job.title} tại ${job.companyName}! Bạn có câu hỏi nào về ca làm việc hoặc quy trình ứng tuyển không?`,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isMe: false,
+          },
+        ],
+      };
+      setConversations((prev) => [conv!, ...prev]);
+    }
+    setActiveConvId(conv.id);
+    setSelectedJob(null);
+    setActiveTab('messages');
+  };
+
+  const handleOpenChatWithCandidate = (candidateName: string, candidateEmail: string, jobTitle: string) => {
+    let conv = conversations.find((c) => c.participantName === candidateName);
+    if (!conv) {
+      conv = {
+        id: 'conv-' + Date.now(),
+        participantId: 'cand-' + candidateEmail,
+        participantName: candidateName,
+        participantRole: 'candidate',
+        companyName: currentUser?.companyName || 'Bộ phận Tuyển dụng',
+        jobTitle: jobTitle,
+        lastMessage: `Chào ${candidateName}, công ty đã nhận hồ sơ ứng tuyển của bạn.`,
+        lastTimestamp: 'Vừa xong',
+        unreadCount: 0,
+        messages: [
+          {
+            id: 'msg-' + Date.now(),
+            senderId: currentUser?.id || 'employer',
+            senderName: currentUser?.fullName || 'Nhà tuyển dụng',
+            senderRole: 'employer',
+            text: `Chào ${candidateName}, công ty đã nhận hồ sơ ứng tuyển của bạn cho vị trí ${jobTitle}. Bạn có thể trao đổi thêm qua đây nhé!`,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isMe: true,
+          },
+        ],
+      };
+      setConversations((prev) => [conv!, ...prev]);
+    }
+    setActiveConvId(conv.id);
+    setSelectedJob(null);
+    setActiveTab('messages');
+  };
+
+  const handleSendMessage = (convId: string, text: string) => {
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newMsg: ChatMessage = {
+      id: 'msg-' + Date.now(),
+      senderId: currentUser?.id || 'me',
+      senderName: currentUser?.fullName || (currentUser?.role === 'employer' ? 'Nhà tuyển dụng' : 'Ứng viên'),
+      senderRole: currentUser?.role || 'candidate',
+      text: text,
+      timestamp: timeStr,
+      isMe: true,
+    };
+
+    setConversations((prev) =>
+      prev.map((c) => {
+        if (c.id === convId) {
+          return {
+            ...c,
+            lastMessage: text,
+            lastTimestamp: timeStr,
+            messages: [...c.messages, newMsg],
+          };
+        }
+        return c;
+      })
+    );
+
+    // Auto-reply simulation from recruiter/candidate after 1.3s
+    setTimeout(() => {
+      const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const targetConv = conversations.find((c) => c.id === convId);
+      const isEmployerMe = currentUser?.role === 'employer';
+
+      let replyText = 'Dạ vâng, cảm ơn thông tin từ bạn! Chúng tôi đã ghi nhận và sẽ phản hồi sớm nhất qua email hoặc tin nhắn nhé.';
+      if (isEmployerMe) {
+        replyText = 'Dạ em cảm ơn anh/chị tuyển dụng ạ! Em đã nhận được thông tin và sẽ chuẩn bị kỹ càng.';
+      } else {
+        if (text.toLowerCase().includes('ca') || text.toLowerCase().includes('lịch')) {
+          replyText = 'Về lịch ca làm, bên mình luôn ưu tiên xếp ca theo thời khóa biểu học của bạn trên trường, bạn yên tâm nhé!';
+        } else if (text.toLowerCase().includes('phỏng vấn') || text.toLowerCase().includes('hẹn')) {
+          replyText = 'Lịch phỏng vấn bên mình có thể tổ chức online qua Google Meet hoặc trực tiếp tại văn phòng. Bạn kiểm tra email để nhận link nhé!';
+        }
+      }
+
+      const replyMsg: ChatMessage = {
+        id: 'msg-reply-' + Date.now(),
+        senderId: 'partner',
+        senderName: targetConv?.participantName || 'Phòng Nhân sự',
+        senderRole: isEmployerMe ? 'candidate' : 'employer',
+        text: replyText,
+        timestamp: replyTime,
+        isMe: false,
+      };
+
+      setConversations((prev) =>
+        prev.map((c) => {
+          if (c.id === convId) {
+            return {
+              ...c,
+              lastMessage: replyText,
+              lastTimestamp: replyTime,
+              messages: [...c.messages, replyMsg],
+            };
+          }
+          return c;
+        })
+      );
+    }, 1300);
   };
 
   const appliedJobIds = applications.map((a) => a.jobId);
   const savedJobsList = jobs.filter((j) => savedJobIds.includes(j.id));
+  const unreadMessagesCount = conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A] flex flex-col antialiased relative">
@@ -321,7 +556,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Responsive Main Container (thích ứng từ Mobile 375px đến Desktop 1280px) */}
+      {/* Responsive Main Container */}
       <main className="flex-1 w-full max-w-6xl mx-auto">
         {selectedJob ? (
           <MobileJobDetail
@@ -333,6 +568,7 @@ export default function App() {
             lang={lang}
             onBack={() => setSelectedJob(null)}
             onToggleSave={handleToggleSaveJob}
+            onOpenChat={handleOpenChatWithEmployer}
             onSubmitApplication={handleSubmitApplication}
           />
         ) : activeTab === 'home' ? (
@@ -344,10 +580,12 @@ export default function App() {
             lang={lang}
             onSelectJob={handleSelectJob}
             onToggleSave={handleToggleSaveJob}
+            onApplyQuick={handleQuickApply}
             onNavigateToSearch={(q) => {
               setSearchFilters((prev) => ({ ...prev, keyword: q }));
               handleChangeTab('search');
             }}
+            onNavigateToTab={(tab) => handleChangeTab(tab as MobileTab)}
           />
         ) : activeTab === 'search' ? (
           <MobileSearchView
@@ -359,6 +597,41 @@ export default function App() {
             lang={lang}
             onSelectJob={handleSelectJob}
             onToggleSave={handleToggleSaveJob}
+            onApplyQuick={handleQuickApply}
+          />
+        ) : activeTab === 'messages' ? (
+          <ChatView
+            currentUser={currentUser}
+            conversations={conversations}
+            activeConvId={activeConvId || conversations[0]?.id || null}
+            jobs={jobs}
+            lang={lang}
+            onSelectConversation={(id) => setActiveConvId(id)}
+            onSendMessage={handleSendMessage}
+            onBackToList={() => setActiveConvId(null)}
+            onViewJobDetail={handleSelectJob}
+          />
+        ) : activeTab === 'ai-cv' ? (
+          <AICvBuilderView
+            profile={profile}
+            currentUser={currentUser}
+            lang={lang}
+            onSaveToProfile={handleSaveProfile as any}
+            showToast={showToast}
+          />
+        ) : activeTab === 'employer' ? (
+          <EmployerDashboard
+            currentUser={currentUser}
+            jobs={jobs}
+            applications={applications}
+            lang={lang}
+            onAddJob={handleAddJob}
+            onUpdateJobStatus={handleUpdateJobStatus}
+            onDeleteJob={handleDeleteJob}
+            onUpdateAppStatus={handleUpdateAppStatus}
+            onOpenChatWithCandidate={handleOpenChatWithCandidate}
+            onViewJobDetail={handleSelectJob}
+            onSwitchToCandidate={() => setActiveTab('home')}
           />
         ) : activeTab === 'saved' ? (
           /* SAVED JOBS LIST */
@@ -402,6 +675,7 @@ export default function App() {
                     lang={lang}
                     onSelect={handleSelectJob}
                     onToggleSave={handleToggleSaveJob}
+                    onApplyQuick={handleQuickApply}
                   />
                 ))}
               </div>
@@ -446,7 +720,7 @@ export default function App() {
                       className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-2.5"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">
+                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                           {app.status}
                         </span>
                         <span className="text-xs text-slate-400 tabular-nums">
@@ -465,16 +739,29 @@ export default function App() {
 
                       <div className="text-xs text-slate-500 pt-1.5 border-t border-slate-100 flex items-center justify-between">
                         <span>Ứng viên: {app.fullName}</span>
-                        {targetJob && (
+                        <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => handleSelectJob(targetJob)}
-                            className="text-[#0F766E] font-bold flex items-center gap-0.5"
+                            onClick={() => {
+                              if (targetJob) handleOpenChatWithEmployer(targetJob);
+                              else setActiveTab('messages');
+                            }}
+                            className="text-[#0F766E] font-bold flex items-center gap-1 hover:underline text-xs"
                           >
-                            <span>Xem tin</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>Nhắn tin</span>
                           </button>
-                        )}
+                          {targetJob && (
+                            <button
+                              type="button"
+                              onClick={() => handleSelectJob(targetJob)}
+                              className="text-slate-600 font-bold flex items-center gap-0.5 hover:text-slate-900"
+                            >
+                              <span>Xem tin</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -494,12 +781,28 @@ export default function App() {
         )}
       </main>
 
+      {/* Quick Apply Modal */}
+      <QuickApplyModal
+        job={quickApplyJob}
+        isOpen={quickApplyOpen}
+        profile={profile}
+        currentUser={currentUser}
+        lang={lang}
+        onClose={() => {
+          setQuickApplyOpen(false);
+          setQuickApplyJob(null);
+        }}
+        onSubmit={handleSubmitApplication}
+      />
+
       {/* Bottom Navigation Bar */}
       <BottomNav
         activeTab={activeTab}
         onChangeTab={handleChangeTab}
         savedCount={savedJobIds.length}
         applicationsCount={applications.length}
+        unreadMessagesCount={unreadMessagesCount}
+        currentUser={currentUser}
         lang={lang}
       />
 
@@ -514,7 +817,7 @@ export default function App() {
         lang={lang}
       />
 
-      {/* Auth Modal (Login / Register / Social) */}
+      {/* Auth Modal (Login / Register / Social / Employer) */}
       <MobileAuthModal
         isOpen={authModalOpen}
         initialMode={authMode}

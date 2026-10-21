@@ -35,6 +35,8 @@ export interface Job {
   benefitsEn?: string[];
   scheduleDetail: string;
   contactPerson: string;
+  employerId?: string;
+  status?: 'published' | 'pending' | 'closed';
 }
 
 export interface EducationItem {
@@ -75,6 +77,7 @@ export interface UserAccount {
   phone: string;
   role: 'candidate' | 'employer';
   avatarUrl?: string;
+  companyName?: string;
 }
 
 export interface SearchFilterState {
@@ -101,5 +104,60 @@ export interface JobApplication {
   major: string;
   availableShifts: string;
   note: string;
-  status: 'Đã gửi hồ sơ' | 'Nhà tuyển dụng đã xem' | 'Mời phỏng vấn';
+  status: 'Đã gửi hồ sơ' | 'Nhà tuyển dụng đã xem' | 'Mời phỏng vấn' | 'Đã duyệt' | 'Từ chối';
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderRole: 'candidate' | 'employer';
+  text: string;
+  timestamp: string;
+  isMe: boolean;
+}
+
+export interface ChatConversation {
+  id: string;
+  participantId: string;
+  participantName: string;
+  participantRole: 'candidate' | 'employer';
+  participantAvatar?: string;
+  companyName?: string;
+  jobId?: string;
+  jobTitle?: string;
+  lastMessage: string;
+  lastTimestamp: string;
+  unreadCount: number;
+  messages: ChatMessage[];
+}
+
+export interface AICVData {
+  fullName: string;
+  targetJob: string;
+  email: string;
+  phone: string;
+  address: string;
+  summary: string;
+  skills: string[];
+  education: {
+    school: string;
+    major: string;
+    year: string;
+    gpa?: string;
+  }[];
+  experience: {
+    role: string;
+    company: string;
+    duration: string;
+    highlights: string[];
+  }[];
+  projects: {
+    name: string;
+    role: string;
+    description: string;
+  }[];
+  certifications: string[];
+  activities: string[];
+  template: 'modern' | 'minimalist' | 'classic' | 'creative';
 }

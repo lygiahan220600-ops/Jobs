@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Search, RotateCcw, MapPin } from 'lucide-react';
+import { Search, RotateCcw } from 'lucide-react';
 import { Job, Language, SearchFilterState } from '../types';
 import { useTranslation } from '../data/translations';
 import {
@@ -18,8 +18,9 @@ interface MobileSearchViewProps {
   savedJobIds: string[];
   appliedJobIds: string[];
   lang: Language;
-  onSelectJob: (job: Job) => void;
+  onSelectJob: (job) => void;
   onToggleSave: (jobId: string, e: React.MouseEvent) => void;
+  onApplyQuick?: (job: Job) => void;
 }
 
 export const MobileSearchView: React.FC<MobileSearchViewProps> = ({
@@ -31,6 +32,7 @@ export const MobileSearchView: React.FC<MobileSearchViewProps> = ({
   lang,
   onSelectJob,
   onToggleSave,
+  onApplyQuick,
 }) => {
   const t = useTranslation(lang);
 
@@ -93,140 +95,107 @@ export const MobileSearchView: React.FC<MobileSearchViewProps> = ({
     <div className="w-full px-3 sm:px-6 py-4 pb-28 space-y-3.5">
       {/* Search Bar */}
       <div className="relative">
-        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <Search className="w-4 h-4 text-stone-600 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
         <input
           type="text"
           value={filters.keyword}
           onChange={(e) => setFilters((prev) => ({ ...prev, keyword: e.target.value }))}
-          placeholder={t.heroSearchPlaceholder}
-          className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-[#0F766E] shadow-2xs"
+          placeholder={t.searchPlaceholder}
+          className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E8E2D5] rounded-2xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-[#2F5233]/20 focus:border-[#2F5233] shadow-xs"
         />
       </div>
 
-      {/* Filter Options Responsive Grid */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-          {/* Location: Toàn quốc */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-[#0F766E]" />
-              <span>{t.location} (Toàn quốc)</span>
-            </label>
-            <select
-              value={filters.location}
-              onChange={(e) => setFilters((prev) => ({ ...prev, location: e.target.value }))}
-              className="w-full px-2.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:border-[#0F766E]"
-            >
-              {CITIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
+      {/* Filter Row 1: Location & Job Type */}
+      <div className="grid grid-cols-2 gap-2">
+        <select
+          value={filters.location}
+          onChange={(e) => setFilters((prev) => ({ ...prev, location: e.target.value }))}
+          className="w-full px-2.5 py-2 text-xs bg-white border border-[#E8E2D5] rounded-xl text-stone-800 focus:outline-none focus:border-[#2F5233] shadow-2xs truncate"
+        >
+          {CITIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
 
-          {/* Job Type: Part-time, Full-time, Thực tập */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-              {t.workMode} / Loại hình
-            </label>
-            <select
-              value={filters.jobType}
-              onChange={(e) => setFilters((prev) => ({ ...prev, jobType: e.target.value }))}
-              className="w-full px-2.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:border-[#0F766E]"
-            >
-              {JOB_TYPES.map((jt) => (
-                <option key={jt} value={jt}>
-                  {jt}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Salary */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-              {t.salary}
-            </label>
-            <select
-              value={filters.salaryCategory}
-              onChange={(e) => setFilters((prev) => ({ ...prev, salaryCategory: e.target.value }))}
-              className="w-full px-2.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:border-[#0F766E]"
-            >
-              {SALARY_CATEGORIES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Experience */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-              {t.experience}
-            </label>
-            <select
-              value={filters.experience}
-              onChange={(e) => setFilters((prev) => ({ ...prev, experience: e.target.value }))}
-              className="w-full px-2.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:border-[#0F766E]"
-            >
-              {EXPERIENCE_LEVELS.map((ex) => (
-                <option key={ex} value={ex}>
-                  {ex}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Second row: Major & Reset button */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-100">
-          <div className="w-full sm:w-72">
-            <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-              {t.major}
-            </label>
-            <select
-              value={filters.major}
-              onChange={(e) => setFilters((prev) => ({ ...prev, major: e.target.value }))}
-              className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:border-[#0F766E]"
-            >
-              {MAJORS.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleReset}
-            className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1.5 self-end sm:self-auto touch-manipulation pt-1 sm:pt-0"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>{t.resetFilters}</span>
-          </button>
-        </div>
+        <select
+          value={filters.jobType}
+          onChange={(e) => setFilters((prev) => ({ ...prev, jobType: e.target.value }))}
+          className="w-full px-2.5 py-2 text-xs bg-white border border-[#E8E2D5] rounded-xl text-stone-800 focus:outline-none focus:border-[#2F5233] shadow-2xs truncate"
+        >
+          {JOB_TYPES.map((jt) => (
+            <option key={jt} value={jt}>
+              {jt}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Results Header */}
-      <div className="flex items-center justify-between pt-1">
-        <span className="text-sm font-bold text-slate-800">
-          {t.jobsFound}: <strong className="text-[#0F766E] tabular-nums font-black">{filtered.length}</strong>
+      {/* Filter Row 2: Salary, Major, Experience */}
+      <div className="grid grid-cols-3 gap-2">
+        <select
+          value={filters.salaryCategory}
+          onChange={(e) => setFilters((prev) => ({ ...prev, salaryCategory: e.target.value }))}
+          className="w-full px-2 py-2 text-[11px] sm:text-xs bg-white border border-[#E8E2D5] rounded-xl text-stone-800 focus:outline-none focus:border-[#2F5233] shadow-2xs truncate"
+        >
+          {SALARY_CATEGORIES.map((sc) => (
+            <option key={sc} value={sc}>
+              {sc}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={filters.major}
+          onChange={(e) => setFilters((prev) => ({ ...prev, major: e.target.value }))}
+          className="w-full px-2 py-2 text-[11px] sm:text-xs bg-white border border-[#E8E2D5] rounded-xl text-stone-800 focus:outline-none focus:border-[#2F5233] shadow-2xs truncate"
+        >
+          {MAJORS.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={filters.experience}
+          onChange={(e) => setFilters((prev) => ({ ...prev, experience: e.target.value }))}
+          className="w-full px-2 py-2 text-[11px] sm:text-xs bg-white border border-[#E8E2D5] rounded-xl text-stone-800 focus:outline-none focus:border-[#2F5233] shadow-2xs truncate"
+        >
+          {EXPERIENCE_LEVELS.map((el) => (
+            <option key={el} value={el}>
+              {el}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Results Header + Reset button */}
+      <div className="flex items-center justify-between text-xs pt-1">
+        <span className="font-semibold text-stone-700">
+          Tìm thấy <span className="text-[#2F5233] font-bold">{filtered.length}</span> việc làm
         </span>
+        <button
+          type="button"
+          onClick={handleReset}
+          className="flex items-center gap-1 text-stone-600 hover:text-[#2F5233] text-[11px] font-medium transition-colors"
+        >
+          <RotateCcw className="w-3 h-3" />
+          <span>{t.resetFilters}</span>
+        </button>
       </div>
 
       {/* Job Cards Responsive Grid */}
       {filtered.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-2xs">
-          <p className="text-xs sm:text-sm text-slate-600 mb-3">
+        <div className="bg-white border border-[#E8E2D5] rounded-3xl p-8 text-center shadow-xs">
+          <p className="text-xs sm:text-sm text-stone-700 mb-3">
             {t.noSearchResults}
           </p>
           <button
             type="button"
             onClick={handleReset}
-            className="px-4 py-2 bg-[#0F766E] text-white rounded-xl text-xs font-semibold"
+            className="px-4 py-2 bg-[#2F5233] text-white rounded-xl text-xs font-semibold hover:bg-[#244127] transition-colors"
           >
             {t.resetFilters}
           </button>
@@ -242,6 +211,7 @@ export const MobileSearchView: React.FC<MobileSearchViewProps> = ({
               lang={lang}
               onSelect={onSelectJob}
               onToggleSave={onToggleSave}
+              onApplyQuick={() => onApplyQuick && onApplyQuick(job)}
             />
           ))}
         </div>

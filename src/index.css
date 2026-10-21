@@ -1,9 +1,32 @@
 @import "tailwindcss";
 
+@theme {
+  --color-moss-50: #f4f7f4;
+  --color-moss-100: #e5ede6;
+  --color-moss-200: #cbdbcd;
+  --color-moss-300: #a3c3aa;
+  --color-moss-400: #75a27f;
+  --color-moss-500: #52845c;
+  --color-moss-600: #3f6a47;
+  --color-moss-700: #33553a;
+  --color-moss-800: #2b4531;
+  --color-moss-900: #233929;
+  --color-moss-950: #121e15;
+
+  --color-cream-50: #fdfcf9;
+  --color-cream-100: #faf7f2;
+  --color-cream-200: #f4efe4;
+  --color-cream-300: #ebe2d2;
+  --color-cream-400: #decfa8;
+  --color-cream-500: #cbb493;
+}
+
 @layer base {
   body {
     font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-tap-highlight-color: transparent;
+    background-color: #FAF7F2;
+    color: #213324;
   }
 
   h1, h2, h3, h4, .font-display {
@@ -12,6 +35,11 @@
 
   .font-mono {
     font-family: 'JetBrains Mono', monospace;
+  }
+
+  ::selection {
+    background-color: #D8E6D9;
+    color: #1A331E;
   }
 }
 
