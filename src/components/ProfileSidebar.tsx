@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from "react";
 import {
   X,
   Camera,
@@ -16,10 +16,11 @@ import {
   Trash2,
   PenTool,
   Calendar,
-} from 'lucide-react';
-import { Language, StudentProfile, UserAccount, EducationItem } from '../types';
-import { useTranslation } from '../data/translations';
-import { CITIES, STANDARD_MAJORS, SALARY_CATEGORIES } from '../data/mockJobs';
+} from "lucide-react";
+import { Language, StudentProfile, UserAccount, EducationItem } from "../types";
+import { useTranslation } from "../data/translations";
+import { CITIES, STANDARD_MAJORS, SALARY_CATEGORIES } from "../data/mockJobs";
+import { APP_LOGO_SRC } from "./AppLogo";
 
 interface ProfileSidebarProps {
   isOpen: boolean;
@@ -34,7 +35,7 @@ interface ProfileSidebarProps {
 export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   isOpen,
   onClose,
-  profile,
+profile,
   currentUser,
   onSaveProfile,
   onLogout,
@@ -163,31 +164,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
 
       {/* Slide bar đổ dọc bên trái - vừa vặn điện thoại và máy tính */}
       <div className="relative w-[90vw] sm:w-[420px] max-w-md h-[100dvh] bg-white shadow-2xl z-[10000] flex flex-col overflow-hidden animate-slideRight">
-        {/* Top Header thanh menu slide bar */}
-        <div className="px-4 py-3 bg-[#0F766E] text-white flex items-center justify-between shrink-0 shadow-sm">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white">
-              <User className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold font-display leading-tight">
-                Hồ sơ cá nhân
-              </h2>
-              <p className="text-[10px] text-white/80 leading-none">
-                {currentUser ? `Tài khoản: ${currentUser.email || currentUser.phone}` : 'Chế độ khách (Mặc định để trống)'}
-              </p>
-            </div>
-          </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-white/20 active:scale-95 text-white transition-colors"
-            aria-label="Đóng thanh slide bar"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
 
         {/* Thông báo đã lưu thành công */}
         {savedSuccess && (

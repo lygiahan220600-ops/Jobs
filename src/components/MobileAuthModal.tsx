@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, X, ArrowLeft } from 'lucide-react';
 import { Language, UserAccount } from '../types';
 import { useTranslation } from '../data/translations';
+import { APP_LOGO_SRC } from './AppLogo';
 
 interface MobileAuthModalProps {
   isOpen: boolean;
@@ -123,22 +124,31 @@ export const MobileAuthModal: React.FC<MobileAuthModalProps> = ({
       role="dialog"
     >
       <div className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-2xl max-h-[92vh] overflow-y-auto p-5 pb-safe animate-slideUp">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <div>
-            <h2 className="text-base font-extrabold text-slate-900 font-display">
-              {view === 'login' && t.login}
-              {view === 'register' && t.register}
-              {view === 'forgot' && t.forgotPassword}
-            </h2>
-            <p className="text-[11px] text-slate-500">
-              Jobs — Nền tảng việc làm sinh viên
-            </p>
+        {/* Header with App Logo */}
+        <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-white border border-slate-200/80 p-1 flex items-center justify-center shadow-2xs shrink-0">
+              <img
+                src={APP_LOGO_SRC}
+                alt="Jobs Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900 font-display leading-tight">
+                {view === 'login' && t.login}
+                {view === 'register' && t.register}
+                {view === 'forgot' && t.forgotPassword}
+              </h2>
+              <p className="text-[11px] text-slate-500 font-medium">
+                Jobs — Nền tảng tuyển dụng & việc làm
+              </p>
+            </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full text-slate-400 hover:text-slate-700"
+            className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>

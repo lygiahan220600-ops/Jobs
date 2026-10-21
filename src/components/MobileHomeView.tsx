@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { Search, SlidersHorizontal, Sparkles, MapPin } from 'lucide-react';
 import { Job, Language, ShiftSlot, StudentProfile } from '../types';
 import { useTranslation } from '../data/translations';
-import { CITIES, JOB_TYPES, SALARY_CATEGORIES, SHIFT_SLOTS, MAJORS } from '../data/mockJobs';
+import { CITIES, SALARY_CATEGORIES, SHIFT_SLOTS } from '../data/mockJobs';
 import { MobileJobCard } from './MobileJobCard';
+import { APP_LOGO_SRC } from './AppLogo';
 
 interface MobileHomeViewProps {
   jobs: Job[];
@@ -119,6 +120,21 @@ export const MobileHomeView: React.FC<MobileHomeViewProps> = ({
               placeholder={t.heroSearchPlaceholder}
               className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-white text-slate-900 rounded-xl placeholder:text-slate-400 focus:outline-none shadow-xs"
             />
+          </div>
+        </div>
+
+        {/* Decorative official brand logo badge */}
+        <div className="absolute right-4 top-4 hidden md:flex items-center gap-2 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-white/20">
+          <div className="w-8 h-8 rounded-xl bg-white p-0.5 flex items-center justify-center shrink-0">
+            <img
+              src={APP_LOGO_SRC}
+              alt="Jobs Logo"
+              className="w-full h-full object-contain"
+            />
+          </div>
+          <div className="text-left">
+            <span className="block text-xs font-black tracking-tight leading-none text-white font-display">Jobs</span>
+            <span className="text-[9px] text-white/80 leading-none">Tuyển dụng & Việc làm</span>
           </div>
         </div>
       </div>

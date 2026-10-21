@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Globe, User as UserIcon, Menu, Check } from 'lucide-react';
+import { User as UserIcon, Menu, Check } from 'lucide-react';
 import { Language, UserAccount } from '../types';
 import { SUPPORTED_LANGUAGES } from '../data/translations';
+import { AppLogo } from './AppLogo';
 
 interface MobileTopBarProps {
   lang: Language;
@@ -23,9 +24,9 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 pt-safe">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between">
         {/* Left: Hamburger Menu (mở Slide bar hồ sơ bên trái) & Logo */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <button
             type="button"
             onClick={onOpenProfileSidebar}
@@ -37,20 +38,11 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
             <span className="text-xs font-bold text-slate-800">Hồ sơ</span>
           </button>
 
-          {/* Brand */}
-          <div className="flex items-center gap-2">
-            <div className="px-2 h-8 rounded-xl bg-[#0F766E] flex items-center justify-center text-white font-black text-xs shadow-xs font-display tracking-tight">
-              Jobs
-            </div>
-            <div className="flex flex-col">
-              <span className="text-base font-extrabold tracking-tight text-slate-900 font-display leading-tight">
-                Jobs
-              </span>
-              <span className="text-[10px] text-slate-500 font-medium leading-none hidden sm:block">
-                Nền tảng việc làm sinh viên toàn quốc
-              </span>
-            </div>
-          </div>
+          {/* Official App Logo */}
+          <AppLogo
+            size="sm"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          />
         </div>
 
         {/* Right Controls: Ngôn ngữ thế giới & Tài khoản */}
@@ -60,7 +52,7 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
             <button
               type="button"
               onClick={() => setShowLangMenu(!showLangMenu)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-semibold transition-colors touch-manipulation"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-semibold transition-colors touch-manipulation"
               aria-label="Tùy chọn ngôn ngữ quốc tế"
             >
               <span className="text-sm leading-none">{currentLangObj.flag}</span>
