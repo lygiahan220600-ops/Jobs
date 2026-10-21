@@ -1,0 +1,8 @@
+{
+  "name": "Jobs",
+  "description": "Jobs - Nền tảng tìm kiếm việc làm cho sinh viên phù hợp theo ngành học, kỹ năng, khu vực và thời gian rảnh.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
